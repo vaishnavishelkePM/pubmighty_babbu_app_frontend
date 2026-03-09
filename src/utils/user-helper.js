@@ -34,20 +34,6 @@ export function publicUrlFromPath(p) {
   return safeJoin(base, normalized);
 }
 
-export function getMediaSrc(row) {
-  const p = String(row?.media_path || row?.image_path || row?.video_path || '').trim();
-  if (p) {
-    if (p.startsWith('http')) return p;
-    return publicUrlFromPath(p);
-  }
-
-  const folders = String(row?.folders || '').trim();
-  const name = String(row?.name || '').trim();
-  if (folders && name) return publicUrlFromPath(`/${folders}/${name}`);
-  return '';
-}
-//users
-
 export function isHttpUrl(v) {
   return !!v && /^https?:\/\//i.test(String(v));
 }
@@ -56,9 +42,7 @@ export function normalizePath(p) {
   return String(p || '').replace(/^\/+/, '');
 }
 
-export function getMime(file) {
-  return String(file?.mime_type || file?.mimeType || file?.type || file?.mime || '').toLowerCase();
-}
+
 export function getFilePublicUrl(file) {
   if (!file) return '';
 
@@ -104,16 +88,9 @@ export const heightStringToInt = (v) => {
   return Math.trunc(n);
 };
 
-export const normStr = (v) => (typeof v === 'string' ? v.trim() : '');
+export const safeTrim = (v) => (typeof v === 'string' ? v.trim() : '');
 
-export function lowerStr(v) {
-  return normStr(v).toLowerCase();
-}
-export function to01(v, fallback = 1) {
-  if (v === 0 || v === '0' || v === false || v === 'false') return 0;
-  if (v === 1 || v === '1' || v === true || v === 'true') return 1;
-  return fallback;
-}
+
 export function normalizeCSV6(s) {
   const items = String(s ?? '')
     .split(',')
@@ -170,11 +147,6 @@ export function getVideoSrc(v, botId) {
   return publicUrlFromPath(`/uploads/videos/${botId}/${filename}`);
 }
 
-export const getToken = () => {
-  let token = getCookie('session_key');
-  if (!token && typeof window !== 'undefined') token = window.localStorage.getItem('session_key');
-  return token || null;
-};
 
 export const tokenHelpText = (t) => {
   if (t.key.startsWith('bot.')) return `Replaced with the Bot's ${t.label}`;

@@ -147,7 +147,6 @@ export function DashboardView() {
         color: '#0ea5e9',
       },
 
-      // . NEW CARD 1
       {
         title: 'Total Prompts',
         value: stats?.master_prompts?.total_active_master_prompts ?? 0,
@@ -155,7 +154,7 @@ export function DashboardView() {
         color: '#7c3aed',
       },
 
-      // . NEW CARD 2
+
       {
         title: 'Total Packages',
         value: stats?.coin_packages?.total_active_coin_packages ?? 0,

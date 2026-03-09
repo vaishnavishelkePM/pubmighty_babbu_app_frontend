@@ -45,7 +45,7 @@ import { paths } from 'src/routes/paths';
 
 import { fDate, fTime } from 'src/utils/format-time';
 import { getCookie, formatDateTime } from 'src/utils/helper';
-import { pickDate, getIconSrc } from 'src/utils/notification-helper';
+import { getIconSrc } from 'src/utils/notification-helper';
 import { ImageLightbox, useImageLightbox } from 'src/utils/image-preview-helper';
 
 import { CONFIG } from 'src/global-config';
@@ -294,9 +294,8 @@ export default function SingleNotificationsView() {
     setSelectedRow(row);
     setOpenViewDialog(true);
   };
-
-  const scheduledAt = (row) => pickDate(row, 'scheduledAt', 'scheduled_at');
-  const sentAt = (row) => pickDate(row, 'sentAt', 'sent_at');
+  const scheduledAt = (row) => row?.scheduledAt || row?.scheduled_at || null;
+  const sentAt = (row) => row?.sentAt || row?.sent_at || null;
 
   return (
     <DashboardContent maxWidth="xl">

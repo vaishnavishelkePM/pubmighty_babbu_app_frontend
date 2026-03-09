@@ -25,7 +25,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 import { paths } from 'src/routes/paths';
 
-import { isBlank, safeJoin, SectionTitle, toNullIfEmpty } from 'src/utils/helper';
+import { isBlank, safeJoin, SectionTitle } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -84,15 +84,11 @@ export default function UpdateAdminProfileView() {
     setAvatarPreview(null);
   }, [avatarFile]);
 
-  // . show avatar from context
-  // AFTER
   const currentAvatarUrl = useMemo(() => {
     const filename = user?.avatar || '';
     if (!filename) return '';
-    // Only add cache bust after an upload (avatarRefreshKey changes),
-    // otherwise use a stable URL so it doesn't flicker on mount
-    const bust = encodeURIComponent(String(avatarRefreshKey));
-    return safeJoin(CONFIG.assetsUrl, `uploads/avatar/admin/${filename}?v=${bust}`);
+
+    return safeJoin(CONFIG.assetsUrl, `uploads/avatar/admin/${filename}`);
   }, [user?.avatar, avatarRefreshKey]);
   const fetchProfile = async () => {
     try {
@@ -192,14 +188,41 @@ export default function UpdateAdminProfileView() {
     }
 
     // names (nullable)
-    if (toNullIfEmpty(vals.first_name) !== toNullIfEmpty(base.first_name)) {
-      fd.append('first_name', toNullIfEmpty(vals.first_name));
+    const nextFirst =
+      typeof vals.first_name === 'string'
+        ? vals.first_name.trim() === ''
+          ? null
+          : vals.first_name.trim()
+        : (vals.first_name ?? null);
+
+    const baseFirst =
+      typeof base.first_name === 'string'
+        ? base.first_name.trim() === ''
+          ? null
+          : base.first_name.trim()
+        : (base.first_name ?? null);
+
+    if (nextFirst !== baseFirst) {
+      fd.append('first_name', nextFirst); // null allowed (backend should handle)
     }
 
-    if (toNullIfEmpty(vals.last_name) !== toNullIfEmpty(base.last_name)) {
-      fd.append('last_name', toNullIfEmpty(vals.last_name));
-    }
+    const nextLast =
+      typeof vals.last_name === 'string'
+        ? vals.last_name.trim() === ''
+          ? null
+          : vals.last_name.trim()
+        : (vals.last_name ?? null);
 
+    const baseLast =
+      typeof base.last_name === 'string'
+        ? base.last_name.trim() === ''
+          ? null
+          : base.last_name.trim()
+        : (base.last_name ?? null);
+
+    if (nextLast !== baseLast) {
+      fd.append('last_name', nextLast); // null allowed
+    }
     // password change
     if (!isBlank(vals.password)) {
       fd.append('password', vals.password);

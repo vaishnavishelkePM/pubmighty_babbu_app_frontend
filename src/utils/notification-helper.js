@@ -1,12 +1,28 @@
 import { toast } from 'react-toastify';
 
-import { Box, Chip, Stack, Paper, Alert, Typography } from '@mui/material';
+import {
+  Box,
+  Chip,
+  Grid,
+  Stack,
+  Paper,
+  Alert,
+  Select,
+  MenuItem,
+  TextField,
+  Typography,
+  InputLabel,
+  FormControl,
+  InputAdornment,
+} from '@mui/material';
 
 import { safeTrim } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 
 import { Iconify } from 'src/components/iconify';
+import BotSelector from 'src/components/selectors/bot-selector';
+import ActionSelector from 'src/components/selectors/single-notification-action-selector';
 
 export function isProbablyUrl(v) {
   if (!v) return true;
@@ -78,13 +94,6 @@ export const normalizePrefillFilters = (obj) => {
   };
 };
 
-export function toIsoOrNull(datetimeLocalStr) {
-  const v = safeTrim(datetimeLocalStr);
-  if (!v) return null;
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
 
 export function PreviewPanel({ form, title, body, cta1Title, cta1Url, cta2Title, cta2Url }) {
   return (
@@ -239,42 +248,6 @@ export const META_FILTERS_TEMPLATE = {
   last_active_days: null,
 };
 
-export function pickDate(row, k1, k2) {
-  return row?.[k1] || row?.[k2] || null;
-}
-
-export function parseMetaFilters(raw) {
-  if (!raw) return { obj: null, rawText: '' };
-  if (raw && typeof raw === 'object') return { obj: raw, rawText: JSON.stringify(raw) };
-
-  const s = String(raw).trim();
-  let cur = s;
-
-  for (let i = 0; i < 3; i += 1) {
-    try {
-      const parsed = JSON.parse(cur);
-      if (typeof parsed === 'string') {
-        cur = parsed;
-        continue;
-      }
-      if (parsed && typeof parsed === 'object') {
-        return { obj: parsed, rawText: s };
-      }
-      return { obj: null, rawText: s };
-    } catch (e) {
-      break;
-    }
-  }
-
-  try {
-    const parsed2 = JSON.parse(cur);
-    if (parsed2 && typeof parsed2 === 'object') return { obj: parsed2, rawText: s };
-  } catch (e) {
-    // ignore
-  }
-
-  return { obj: null, rawText: s };
-}
 
 export function normalizeFiltersToTemplate(inputObj) {
   const out = { ...META_FILTERS_TEMPLATE };
@@ -304,9 +277,6 @@ export function normalizeFiltersToTemplate(inputObj) {
   return out;
 }
 
-export function templateEntries(obj) {
-  return Object.keys(META_FILTERS_TEMPLATE).map((k) => [k, obj?.[k]]);
-}
 
 export async function copyToClipboard(text) {
   try {
@@ -339,7 +309,7 @@ export const parseBotIdFromUrl = (url) => {
   try {
     const s = String(url || '').trim();
     if (!s) return '';
-    // handle "open-profile?bot_id=14"
+
     const [path, qs] = s.split('?');
     if (path !== 'open-profile') return '';
     const p = new URLSearchParams(qs || '');
@@ -374,3 +344,155 @@ export const buildInternalUrl = (action, extra = {}) => {
 
   return a;
 };
+
+const INTERNAL_ACTION_OPEN_PROFILE = 'open-profile';
+export function CtaCard({
+  label,
+  color = 'primary',
+  cta,
+  setCta,
+  maxTitle = 40,
+  titleValue,
+  urlValue,
+  urlInvalid,
+  pairInvalid,
+}) {
+  const showBot =
+    cta.landing_type === 'internal' && (cta.internal_action || '') === INTERNAL_ACTION_OPEN_PROFILE;
+
+  return (
+    <Paper
+      variant="outlined"
+      sx={(th) => ({
+        p: 2,
+        bgcolor: 'background.neutral',
+        border: pairInvalid
+          ? `2px solid ${th.palette.error.main}`
+          : `1px solid ${th.palette.divider}`,
+        borderRadius: 2,
+      })}
+    >
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+        <Chip label={label} size="small" color={color} sx={{ fontWeight: 800 }} />
+        <Typography variant="body2" color="text.secondary">
+          Optional
+        </Typography>
+      </Stack>
+
+      <Grid container spacing={2}>
+        {/* Title */}
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label="Button Title"
+            value={cta.title}
+            onChange={(e) => setCta((p) => ({ ...p, title: e.target.value }))}
+            error={titleValue.length > maxTitle}
+            helperText={`${titleValue.length}/${maxTitle}`}
+            inputProps={{ maxLength: maxTitle }}
+          />
+        </Grid>
+
+        {/* Type */}
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <InputLabel>Landing Type</InputLabel>
+            <Select
+              value={cta.landing_type}
+              label="Landing Type"
+              onChange={(e) =>
+                setCta((p) => ({
+                  ...p,
+                  landing_type: e.target.value,
+                  // reset fields when switching type
+                  internal_action: e.target.value === 'internal' ? p.internal_action || '' : '',
+                  external_url: e.target.value === 'external' ? p.external_url || '' : '',
+                  bot_id: e.target.value === 'internal' ? p.bot_id || '' : '',
+                }))
+              }
+            >
+              <MenuItem value="external">External URL</MenuItem>
+              <MenuItem value="internal">Internal Action</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* Target */}
+        {cta.landing_type === 'external' ? (
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Action URL"
+              placeholder="https://example.com/page"
+              value={cta.external_url}
+              onChange={(e) => setCta((p) => ({ ...p, external_url: e.target.value }))}
+              error={pairInvalid || (Boolean(urlValue) && urlInvalid)}
+              helperText={
+                pairInvalid ? 'Both title and URL are required' : 'Absolute http/https URL'
+              }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="mdi:link" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+        ) : (
+          <Grid item xs={12}>
+            <ActionSelector
+              label="Internal Action"
+              placeholder="Select action..."
+              value={cta.internal_action || ''}
+              onChange={(val) =>
+                setCta((p) => ({
+                  ...p,
+                  internal_action: val || '',
+                  // reset bot if action changes away from open-profile
+                  bot_id: (val || '') === INTERNAL_ACTION_OPEN_PROFILE ? p.bot_id || '' : '',
+                }))
+              }
+              fullWidth
+              helperText={
+                pairInvalid ? 'Both title and internal action are required' : 'Triggers app action'
+              }
+              error={pairInvalid}
+            />
+          </Grid>
+        )}
+
+        {showBot && (
+          <Grid item xs={12}>
+            <BotSelector
+              label={`${label}: Select Bot *`}
+              placeholder="Search bot..."
+              valueId={cta.bot_id ? Number(cta.bot_id) : undefined}
+              onBotSelect={(id) =>
+                setCta((p) => ({
+                  ...p,
+                  bot_id: id ? String(id) : '',
+                }))
+              }
+              fullWidth
+            />
+
+            {!String(cta.bot_id || '').trim() && (
+              <Typography variant="caption" color="error" sx={{ mt: 0.75, display: 'block' }}>
+                Bot is required for <b>{label} open-profile</b>.
+              </Typography>
+            )}
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mt: 0.75, display: 'block' }}
+            >
+              Will save: <code>open-profile?bot_id=XYZ</code>
+            </Typography>
+          </Grid>
+        )}
+      </Grid>
+    </Paper>
+  );
+}

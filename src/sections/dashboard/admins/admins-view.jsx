@@ -43,6 +43,7 @@ import {
 import { paths } from 'src/routes/paths';
 
 import { safeJoin } from 'src/utils/helper';
+import { getSessionToken } from 'src/utils/helper';
 import { fDate, fTime } from 'src/utils/format-time';
 import { ImageLightbox, useImageLightbox } from 'src/utils/image-preview-helper';
 
@@ -123,13 +124,6 @@ export default function AdminsView() {
   const [editOpen, setEditOpen] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  const getToken = () => {
-    let token = getCookie('session_key');
-    if (!token && typeof window !== 'undefined')
-      token = window.localStorage.getItem('session_key') || '';
-    return token || null;
-  };
-
   const createdAt = (row) => row?.createdAt || row?.created_at || null;
   const updatedAt = (row) => row?.updatedAt || row?.updated_at || null;
 
@@ -150,7 +144,7 @@ export default function AdminsView() {
   const avatarLightbox = useImageLightbox();
   const fetchAdmins = useCallback(
     async (nextFilters, page = 1, hardReload = false) => {
-      const token = getToken();
+      const token = getSessionToken();
 
       if (!token) {
         toast.error('Session expired. Please login again.');

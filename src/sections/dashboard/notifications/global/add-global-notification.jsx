@@ -33,14 +33,16 @@ import {
   InputAdornment,
 } from '@mui/material';
 
-import { CtaCard, safeTrim, getCookie, PreviewPanel } from 'src/utils/helper';
+import { safeTrim, getCookie } from 'src/utils/helper';
 import {
-  toIsoOrNull,
+
   isProbablyUrl,
   safeJsonParse,
   normalizePrefillFilters,
   buildOpenProfileUrl,
   parseBotIdFromUrl,
+  PreviewPanel,
+  CtaCard,
 } from 'src/utils/notification-helper';
 
 import { CONFIG } from 'src/global-config';
@@ -281,7 +283,15 @@ export default function AddGlobalFilteredNotificationDialog({ open, onClose, onS
   const landingInternalMissing = landingUrlType === 'internal' && !safeTrim(form.internal_action);
 
   // Scheduled
-  const scheduledIso = toIsoOrNull(form.scheduled_at);
+  const scheduledIso = (() => {
+    const v = safeTrim(form.scheduled_at);
+    if (!v) return null;
+
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) return null;
+
+    return d.toISOString();
+  })();
   const scheduledInvalid = safeTrim(form.scheduled_at) && !scheduledIso;
 
   const scheduledAtIsPast = useMemo(() => {

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 
 import { Box, Avatar, TextField, Typography, Autocomplete, CircularProgress } from '@mui/material';
 
-import { getCookie, useDebounce } from 'src/utils/helper';
+import { getCookie, useDebounce, getSessionToken } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 
@@ -25,7 +25,7 @@ export default function CoinPackageSelector({
   sx,
   excludeId = undefined, //  optional: hide current deleting package
 }) {
-  const getToken = () => getCookie('session_key');
+
 
   const [inputValue, setInputValue] = useState('');
   const [options, setOptions] = useState([]);
@@ -68,7 +68,7 @@ export default function CoinPackageSelector({
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${getToken()}`,
+            Authorization: `Bearer ${getSessionToken()}`,
           },
         });
 
@@ -143,7 +143,7 @@ export default function CoinPackageSelector({
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${getSessionToken()}`,
         },
       });
 

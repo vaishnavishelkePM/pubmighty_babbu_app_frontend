@@ -32,7 +32,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 
 import { paths } from 'src/routes/paths';
 
-import { safeJoin } from 'src/utils/helper';
+import { safeJoin, getSessionToken } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -171,11 +171,6 @@ export default function AddBotView() {
   const [imagePreviews, setImagePreviews] = useState([]); // [{file, url}]
   const [videoPreviews, setVideoPreviews] = useState([]); // [{file, url}]
 
-  const getToken = () => {
-    let token = getCookie('session_key');
-    if (!token && typeof window !== 'undefined') token = window.localStorage.getItem('session_key');
-    return token || null;
-  };
 
   const {
     control,
@@ -353,7 +348,7 @@ export default function AddBotView() {
   };
 
   const onSubmit = async (values) => {
-    const token = getToken();
+    const token = getSessionToken();
 
     if (!token) {
       toast.error('Session expired. Please login again.');

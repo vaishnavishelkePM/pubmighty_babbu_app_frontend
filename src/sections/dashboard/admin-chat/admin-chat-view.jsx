@@ -35,8 +35,8 @@ import {
 
 import { paths } from 'src/routes/paths';
 
+import { apiUrl, formatTime, getSessionToken } from 'src/utils/helper';
 import { ImageLightbox, useImageLightbox } from 'src/utils/image-preview-helper';
-import { apiUrl, formatDay, formatTime, getSessionToken } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -1017,8 +1017,20 @@ export default function AdminChatView() {
       {mode === 'chat' && activeChat && (
         <Box sx={{ mt: 2, color: 'text.secondary' }}>
           <Typography variant="caption">
-            Last activity: {formatDay(activeChat?.last_message_time || activeChat?.updated_at)} •{' '}
-            {formatTime(activeChat?.last_message_time || activeChat?.updated_at)}
+            {(() => {
+              const ts = activeChat?.last_message_time || activeChat?.updated_at;
+              const d = ts ? new Date(ts) : null;
+              const dayText =
+                d && !Number.isNaN(d.getTime())
+                  ? d.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })
+                  : '';
+
+              return (
+                <>
+                  Last activity: {dayText} • {formatTime(ts)}
+                </>
+              );
+            })()}
           </Typography>
         </Box>
       )}

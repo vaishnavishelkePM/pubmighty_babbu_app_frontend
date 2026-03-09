@@ -2,7 +2,6 @@
 
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { getCookie } from 'minimal-shared';
 import { useForm, Controller } from 'react-hook-form';
 import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 
@@ -50,9 +49,10 @@ import {
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
+import { getSessionToken } from 'src/utils/helper';
 import { fDate, fTime } from 'src/utils/format-time';
+import { safeJoin, TabPanel, getFilePublicUrl } from 'src/utils/user-helper';
 import { ImageLightbox, useImageLightbox } from 'src/utils/image-preview-helper';
-import { getMime, safeJoin, TabPanel, getFilePublicUrl } from 'src/utils/user-helper';
 
 import { CONFIG } from 'src/global-config';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -130,13 +130,6 @@ export default function UsersView() {
   const [deleteRow, setDeleteRow] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // ---------------- token + mappers ----------------
-  const getToken = () => {
-    let token = getCookie('session_key');
-    if (!token && typeof window !== 'undefined') token = window.localStorage.getItem('session_key');
-    return token || null;
-  };
-
   const createdAt = (row) => row?.createdAt || row?.created_at || null;
   const updatedAt = (row) =>
     row?.updatedAt || row?.updated_at || row?.modifiedAt || row?.modified_at || null;
@@ -201,7 +194,7 @@ export default function UsersView() {
 
   const fetchUsers = useCallback(
     async (filter, page = 1, hardReload = false) => {
-      const token = getToken();
+      const token = getSessionToken();
 
       if (!token) {
         toast.error('Session expired. Please login again.');
@@ -266,7 +259,7 @@ export default function UsersView() {
 
   const fetchUserDetails = useCallback(
     async (userId) => {
-      const token = getToken();
+      const token = getSessionToken();
       if (!token) {
         toast.error('Session expired. Please login again.');
         router.push(paths?.auth?.login || '/login');
@@ -390,7 +383,7 @@ export default function UsersView() {
 
       const normalized = (Array.isArray(files) ? files : []).map((f) => {
         const url = getFilePublicUrl(f);
-        const mime = getMime(f);
+        const mime = String(f?.mime_type || f?.mimeType || f?.type || f?.mime || '').toLowerCase();
         const name = f?.name || f?.file_name || f?.filename || `File #${f?.id || ''}`;
         return { ...f, __url: url, __mime: mime, __name: name };
       });
@@ -444,7 +437,7 @@ export default function UsersView() {
     const row = deleteRow;
     if (!row?.id) return;
 
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) return;
 
     try {

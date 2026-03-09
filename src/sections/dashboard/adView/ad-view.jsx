@@ -2,7 +2,6 @@
 
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { getCookie } from 'minimal-shared';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
@@ -40,6 +39,7 @@ import {
 
 import { paths } from 'src/routes/paths';
 
+import { getSessionToken } from 'src/utils/helper';
 import { safeJoin, buildQuery } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
@@ -74,13 +74,6 @@ export default function AdView() {
   const [editOpen, setEditOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
 
-  const getToken = () => {
-    let token = getCookie('session_key');
-    if (!token && typeof window !== 'undefined')
-      token = window.localStorage.getItem('session_key') || '';
-    return token || null;
-  };
-
   const statusChip = (value) => (
     <Chip
       label={value ? 'Active' : 'Inactive'}
@@ -98,7 +91,7 @@ export default function AdView() {
 
   const fetchDistributions = useCallback(
     async (nextFilters, hardReload = false) => {
-      const token = getToken();
+      const token = getSessionToken();
       if (!token) {
         toast.error('Session expired. Please login again.');
         router.push(paths?.auth?.login || '/login');
@@ -230,7 +223,7 @@ export default function AdView() {
   };
 
   const submitEdit = async (vals) => {
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) {
       toast.error('Session expired. Please login again.');
       router.push(paths?.auth?.login || '/login');

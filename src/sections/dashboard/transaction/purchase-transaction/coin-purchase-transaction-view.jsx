@@ -3,10 +3,10 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
-import { getCookie } from 'minimal-shared';
+
 import { useRouter } from 'next/navigation';
 import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
-import { getToken } from 'src/utils/user-helper';
+import { getSessionToken } from 'src/utils/helper';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
@@ -175,7 +175,7 @@ export default function CoinPurchaseTransactionsView() {
 
   const fetchTransactions = useCallback(
     async (filter, page = 1, hardReload = false) => {
-      const token = getToken();
+      const token = getSessionToken();
       if (!token) {
         toast.error('Session expired. Please login again.');
         router.push(paths?.auth?.login || '/login');

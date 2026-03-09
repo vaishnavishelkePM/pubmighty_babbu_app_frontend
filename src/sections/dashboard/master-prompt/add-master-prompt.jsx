@@ -34,7 +34,8 @@ import {
 
 import { paths } from 'src/routes/paths';
 
-import { getToken, tokenHelpText } from 'src/utils/user-helper';
+import { tokenHelpText } from 'src/utils/user-helper';
+import { getSessionToken } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 
@@ -176,7 +177,7 @@ export default function AddMasterPromptView({ open, onClose, onCreated }) {
   };
 
   const onSubmit = async (vals) => {
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) return router.push(paths?.auth?.login || '/login');
 
     const payload = {
@@ -249,7 +250,6 @@ export default function AddMasterPromptView({ open, onClose, onCreated }) {
       return acc;
     }, {});
   }, [TOKENS, tokenQuery, tokenGroup]);
-
 
   // ---------------- Render ----------------
 

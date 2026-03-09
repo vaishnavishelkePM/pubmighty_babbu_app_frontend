@@ -45,7 +45,8 @@ import {
 
 import { paths } from 'src/routes/paths';
 
-import { safeJoin } from 'src/utils/helper';
+import { safeJoin, getSessionToken } from 'src/utils/helper';
+
 import { fDate, fTime } from 'src/utils/format-time';
 
 import { CONFIG } from 'src/global-config';
@@ -67,41 +68,45 @@ import {
 import AddMasterPromptView from './add-master-prompt';
 import EditMasterPromptView from './edit-master-prompt';
 
- function buildQuery(filters, page) {
-   const qp = new URLSearchParams();
-   qp.append('page', String(page || 1));
+function buildQuery(filters, page) {
+  const qp = new URLSearchParams();
+  qp.append('page', String(page || 1));
 
-   if ((filters.search || '').trim()) qp.append('search', String(filters.search).trim());
-   if (filters.status) qp.append('status', String(filters.status));
-   if ((filters.id || '').toString().trim()) qp.append('id', String(filters.id).trim());
-   if (filters.user_type) qp.append('user_type', String(filters.user_type));
-   if (filters.user_time) qp.append('user_time', String(filters.user_time));
-   if (filters.bot_gender) qp.append('bot_gender', String(filters.bot_gender));
-   if ((filters.priority_min || '').toString().trim())
-     qp.append('priority_min', String(filters.priority_min).trim());
-   if ((filters.priority_max || '').toString().trim())
-     qp.append('priority_max', String(filters.priority_max).trim());
+  if ((filters.search || '').trim()) qp.append('search', String(filters.search).trim());
+  if (filters.status) qp.append('status', String(filters.status));
+  if ((filters.id || '').toString().trim()) qp.append('id', String(filters.id).trim());
+  if (filters.user_type) qp.append('user_type', String(filters.user_type));
+  if (filters.user_time) qp.append('user_time', String(filters.user_time));
+  if (filters.bot_gender) qp.append('bot_gender', String(filters.bot_gender));
+  if ((filters.priority_min || '').toString().trim())
+    qp.append('priority_min', String(filters.priority_min).trim());
+  if ((filters.priority_max || '').toString().trim())
+    qp.append('priority_max', String(filters.priority_max).trim());
 
-   if ((filters.personality_type || '').trim())
-     qp.append('personality_type', String(filters.personality_type).trim());
+  if ((filters.personality_type || '').trim())
+    qp.append('personality_type', String(filters.personality_type).trim());
 
-   if (
-     filters.location_based !== '' &&
-     filters.location_based !== null &&
-     typeof filters.location_based !== 'undefined'
-   ) {
-     qp.append('location_based', String(filters.location_based));
-   }
+  if (
+    filters.location_based !== '' &&
+    filters.location_based !== null &&
+    filters.location_based !== undefined
+  ) {
+    const v = filters.location_based;
 
-   if (filters.priority_bucket) qp.append('priority', String(filters.priority_bucket));
+    if (v === '1' || v === 1 || v === true || v === 'true') qp.append('location_based', 'true');
+    else if (v === '0' || v === 0 || v === false || v === 'false')
+      qp.append('location_based', 'false');
+  }
 
-   if ((filters.created_from || '').trim()) qp.append('created_from', String(filters.created_from));
-   if ((filters.created_to || '').trim()) qp.append('created_to', String(filters.created_to));
+  if (filters.priority_bucket) qp.append('priority', String(filters.priority_bucket));
 
-   if (filters.perPage) qp.append('perPage', String(filters.perPage));
+  if ((filters.created_from || '').trim()) qp.append('created_from', String(filters.created_from));
+  if ((filters.created_to || '').trim()) qp.append('created_to', String(filters.created_to));
 
-   return qp.toString();
- }
+  if (filters.perPage) qp.append('perPage', String(filters.perPage));
+
+  return qp.toString();
+}
 
 export default function MasterPromptsView() {
   const router = useRouter();
@@ -160,19 +165,12 @@ export default function MasterPromptsView() {
     setDeleteRow(null);
   };
 
-  const getToken = () => {
-    let token = getCookie('session_key');
-    if (!token && typeof window !== 'undefined')
-      token = window.localStorage.getItem('session_key') || '';
-    return token || null;
-  };
-
   const createdAt = (row) => row?.createdAt || row?.created_at || null;
   const updatedAt = (row) => row?.updatedAt || row?.updated_at || null;
 
   const fetchMasterPrompts = useCallback(
     async (nextFilters, page = 1, hardReload = false) => {
-      const token = getToken();
+      const token = getSessionToken();
 
       if (!token) {
         toast.error('Session expired. Please login again.');
@@ -310,7 +308,7 @@ export default function MasterPromptsView() {
   };
 
   const deleteMasterPrompt = async () => {
-    const token = getToken();
+    const token = getSessionToken();
 
     if (!token) {
       toast.error('Session expired. Please login again.');

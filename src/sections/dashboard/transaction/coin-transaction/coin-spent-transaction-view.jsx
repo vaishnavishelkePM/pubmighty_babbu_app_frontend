@@ -43,8 +43,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 import { paths } from 'src/routes/paths';
 
-import { safeJoin } from 'src/utils/helper';
-import { getToken } from 'src/utils/user-helper';
+import { safeJoin, getSessionToken } from 'src/utils/helper';
+
 import { fDate, fTime } from 'src/utils/format-time';
 import { ImageLightbox, useImageLightbox } from 'src/utils/image-preview-helper';
 
@@ -158,7 +158,7 @@ export default function CoinSpentTransactionsView() {
 
   const fetchTransactions = useCallback(
     async (filter, page = 1, hardReload = false) => {
-      const token = getToken();
+      const token = getSessionToken();
       if (!token) {
         toast.error('Session expired. Please login again.');
         router.push(paths?.auth?.login || '/login');

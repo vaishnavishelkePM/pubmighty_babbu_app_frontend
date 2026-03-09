@@ -1,104 +1,3 @@
-// 'use client';
-
-// import axios from 'axios';
-// import { z as zod } from 'zod';
-// import { toast } from 'react-toastify';
-// import { useForm } from 'react-hook-form';
-// import { setCookie } from 'minimal-shared';
-// import { zodResolver } from '@hookform/resolvers/zod';
-
-// import Box from '@mui/material/Box';
-// import Link from '@mui/material/Link';
-// import LoadingButton from '@mui/lab/LoadingButton';
-
-// import { paths } from 'src/routes/paths';
-// import { useRouter } from 'src/routes/hooks';
-
-// import { CONFIG } from 'src/global-config';
-
-// import { Form, Field } from 'src/components/hook-form';
-
-// import { FormHead } from '../components/form-head';
-
-// const forgotSchema = zod.object({
-//   login: zod.string().min(3, { message: 'Email/Username is required!' }),
-// });
-
-// export default function ForgotPasswordView() {
-//   const router = useRouter();
-
-//   const methods = useForm({
-//     resolver: zodResolver(forgotSchema),
-//     defaultValues: { login: '' },
-//     mode: 'onSubmit',
-//   });
-
-//   const onSubmit = methods.handleSubmit(async (data) => {
-//     try {
-//       const url = `${CONFIG.apiUrl}/v1/admin/forgot-password`;
-//       const payload = { email: data.login };
-
-//       const result = await axios.post(url, payload, {
-//         headers: { 'Content-Type': 'application/json' },
-//         validateStatus: () => true,
-//       });
-
-//       const res = result.data;
-
-//       if (!res?.success) {
-//         toast.error(res?.msg || 'Failed to send OTP');
-//         return;
-//       }
-
-//       //  SAVE EMAIL so verify + resend can use it
-//       setCookie('fp_email', data.login, { sameSite: 'lax' });
-
-//       toast.success(res?.msg || 'OTP sent');
-//       router.push(paths.forgotPassword.verify); // "/forgot-password/verify"
-//     } catch (err) {
-//       console.error('Forgot password error:', err);
-//       toast.error(err.message || 'Network error');
-//     }
-//   });
-
-//   return (
-//     <Box>
-//       <FormHead title="Forgot your password?" sx={{ textAlign: { xs: 'center', md: 'left' } }} />
-
-//       <Form methods={methods} onSubmit={onSubmit} autoComplete="off">
-//         <Box gap={3} display="flex" flexDirection="column">
-//           <Field.Text
-//             name="login"
-//             label="Email address"
-//             autoComplete="off"
-//             InputLabelProps={{ shrink: true }}
-//           />
-
-//           <LoadingButton
-//             fullWidth
-//             color="inherit"
-//             size="large"
-//             type="submit"
-//             variant="contained"
-//             loading={methods.formState.isSubmitting}
-//             loadingIndicator="Sending..."
-//           >
-//             Send reset code
-//           </LoadingButton>
-
-//           <Link
-//             href={paths.login.root}
-//             variant="body2"
-//             color="inherit"
-//             sx={{ alignSelf: 'flex-end' }}
-//           >
-//             Return to login
-//           </Link>
-//         </Box>
-//       </Form>
-//     </Box>
-//   );
-// }
 
 'use client';
 
@@ -150,7 +49,7 @@ export default function ForgotPasswordView() {
       const result = await axios.post(
         url,
         {
-          email: data.email, //  backend needs "email"
+          email: data.email,
           captchaToken: captchaValue,
         },
         {
@@ -170,7 +69,7 @@ export default function ForgotPasswordView() {
       setCookie('fp_action', 'forgot_password', { sameSite: 'lax' });
 
       toast.success(res?.msg || 'OTP sent');
-      router.push(paths.forgotPassword.verify); // e.g. "/forgot-password/verify"
+      router.push(paths.forgotPassword.verify);
     } catch (err) {
       console.error('Forgot password error:', err);
       toast.error(err?.message || 'Network error');

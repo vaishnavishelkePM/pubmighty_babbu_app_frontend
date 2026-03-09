@@ -131,9 +131,37 @@ export function LoginView({ settings }) {
 
       setSessionCookies(token, expiresAt);
 
-      if (res?.data?.admin) setUser(res.data.admin);
+      // if (res?.data?.admin) setUser(res.data.admin);
 
+      // AFTER — write to localStorage DIRECTLY before navigate, don't rely on setUser timing
       toast.success(res?.msg || 'Login successful');
+
+      try {
+        const profileRes = await axios.get(`${CONFIG.apiUrl}/v1/admin/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+          validateStatus: () => true,
+        });
+
+        const userData =
+          profileRes?.data?.success && profileRes?.data?.data
+            ? profileRes.data.data
+            : res?.data?.admin || null;
+
+        if (userData) {
+          // Write to localStorage FIRST synchronously before navigation
+          localStorage.setItem('user', JSON.stringify(userData));
+          setUser(userData);
+        }
+      } catch {
+        const fallback = res?.data?.admin || null;
+        if (fallback) {
+          localStorage.setItem('user', JSON.stringify(fallback));
+          setUser(fallback);
+        }
+      }
+
+      // Small delay to ensure localStorage is written before Next.js remounts the layout
+      await new Promise((resolve) => setTimeout(resolve, 50));
       router.push(paths.dashboard.root);
     } catch (err) {
       console.error('Admin login error:', err);

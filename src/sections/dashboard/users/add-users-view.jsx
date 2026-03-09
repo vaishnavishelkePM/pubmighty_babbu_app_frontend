@@ -35,7 +35,7 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { paths } from 'src/routes/paths';
 
 import { heightStringToInt } from 'src/utils/user-helper';
-import { isBlank, safeJoin, appendIfSet } from 'src/utils/helper';
+import { isBlank, safeJoin, appendIfSet, getSessionToken } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -53,8 +53,6 @@ import {
   STATUS_OPTIONS,
   ADD_TAB_FIELDS,
 } from 'src/components/chip/user/user-status';
-
-
 
 // ----------------------- validation -----------------------
 
@@ -173,12 +171,6 @@ export default function AddUserView() {
   // media previews
   const [imagePreviews, setImagePreviews] = useState([]); // [{file, url}]
   const [videoPreviews, setVideoPreviews] = useState([]); // [{file, url}]
-
-  const getToken = () => {
-    let t = getCookie('session_key');
-    if (!t && typeof window !== 'undefined') t = window.localStorage.getItem('session_key') || '';
-    return t || null;
-  };
 
   const {
     control,
@@ -359,7 +351,7 @@ export default function AddUserView() {
   };
 
   const onSubmit = async (values) => {
-    const token = getToken();
+    const token = getSessionToken();
 
     if (!token) {
       toast.error('Session expired. Please login again.');

@@ -36,7 +36,8 @@ import {
 
 import { paths } from 'src/routes/paths';
 
-import { getToken, safeJoin, tokenHelpText } from 'src/utils/user-helper';
+import { safeJoin, tokenHelpText } from 'src/utils/user-helper';
+import { getSessionToken } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 
@@ -222,7 +223,7 @@ export default function EditMasterPromptView({ open, onClose, onUpdated, promptI
     if (!open) return;
 
     (async () => {
-      const token = getToken();
+      const token = getSessionToken();
       if (!token) {
         toast.error('Session expired. Please login again.');
         router.push(paths?.auth?.login || '/login');
@@ -285,7 +286,7 @@ export default function EditMasterPromptView({ open, onClose, onUpdated, promptI
 
   // ---------------- Update submit (diff) ----------------
   const onSubmit = async (vals) => {
-    const token = getToken();
+    const token = getSessionToken();
 
     if (!token) {
       toast.error('Session expired. Please login again.');

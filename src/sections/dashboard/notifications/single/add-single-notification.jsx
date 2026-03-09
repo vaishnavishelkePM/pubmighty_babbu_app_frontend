@@ -36,12 +36,13 @@ import {
   InputAdornment,
 } from '@mui/material';
 
-import { safeTrim, getCookie, PreviewPanel } from 'src/utils/helper';
+import { safeTrim, getCookie } from 'src/utils/helper';
 import {
   isProbablyUrl,
   safeJsonParse,
   buildInternalUrl,
   DATA_KEYS,
+  PreviewPanel,
 } from 'src/utils/notification-helper';
 
 import { CONFIG } from 'src/global-config';

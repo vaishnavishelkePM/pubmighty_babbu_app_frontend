@@ -49,9 +49,9 @@ import {
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { safeJoin } from 'src/utils/helper';
+import { safeJoin, getSessionToken } from 'src/utils/helper';
 import { fDate, fTime } from 'src/utils/format-time';
-import { TabPanel, getToken, publicUrlFromPath } from 'src/utils/user-helper';
+import { TabPanel, publicUrlFromPath } from 'src/utils/user-helper';
 import { ImageLightbox, useImageLightbox } from 'src/utils/image-preview-helper';
 
 import { CONFIG } from 'src/global-config';
@@ -177,7 +177,7 @@ export default function BotsView() {
 
   const fetchBots = useCallback(
     async (filter, page = 1, hardReload = false) => {
-      const token = getToken();
+      const token = getSessionToken();
 
       if (!token) {
         toast.error('Session expired. Please login again.');
@@ -337,7 +337,7 @@ export default function BotsView() {
     setSelectedVideos([]);
     setViewOpen(true);
 
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) return;
 
     try {
@@ -435,7 +435,7 @@ export default function BotsView() {
     const row = deleteRow;
     if (!row?.id) return;
 
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) return;
 
     try {

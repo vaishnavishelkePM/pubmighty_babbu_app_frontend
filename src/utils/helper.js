@@ -2,7 +2,6 @@ import dayjs from 'dayjs';
 import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 
-import Divider from '@mui/material/Divider';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -11,10 +10,8 @@ import {
   Box,
   Card,
   Grid,
-  Chip,
   Stack,
   Paper,
-  Alert,
   Button,
   Select,
   Skeleton,
@@ -24,22 +21,11 @@ import {
   Typography,
   InputLabel,
   FormControl,
-  InputAdornment,
 } from '@mui/material';
 
 import { CONFIG } from 'src/global-config';
 
 import { Iconify } from 'src/components/iconify';
-import BotSelector from 'src/components/selectors/bot-selector';
-import ActionSelector from 'src/components/selectors/single-notification-action-selector';
-
-import IOSMobilePreview from 'src/sections/dashboard/notifications/previews/ios-mobile-preview';
-import ChromeDesktopPreview from 'src/sections/dashboard/notifications/previews/chrome-desktop-preview';
-import AndroidMobilePreview from 'src/sections/dashboard/notifications/previews/android-mobile-preview';
-import WindowsDesktopPreview from 'src/sections/dashboard/notifications/previews/windows-desktop-preview';
-
-export const isBlank = (v) => v === undefined || v === null || String(v).trim() === '';
-export const toBoolStr = (v) => (String(v) === '1' || v === true ? 'true' : 'false');
 
 export const setCookie = (name, value, options = {}) => {
   let cookie = `${name}=${encodeURIComponent(value)}; path=/`;
@@ -111,24 +97,6 @@ export const safeParse = (json) => {
   }
 };
 
-export function toNullableNumber(val) {
-  if (val === '' || val === null || val === undefined) return null;
-  const n = Number(val);
-  return Number.isFinite(n) ? n : null;
-}
-
-export function toNullableBoolean(val) {
-  // Accept true/false, "true"/"false", 1/0, "1"/"0"
-  if (val === '' || val === null || val === undefined) return null;
-  if (typeof val === 'boolean') return val;
-  if (val === 1 || val === '1') return true;
-  if (val === 0 || val === '0') return false;
-  const s = String(val).toLowerCase().trim();
-  if (s === 'true') return true;
-  if (s === 'false') return false;
-  return null;
-}
-
 export function formatNumber(num, digits = 1) {
   if (num === null || num === undefined || isNaN(num)) return '0';
 
@@ -161,11 +129,6 @@ export function stringToArray(text) {
   return raw;
 }
 
-function sanitizePhone(value = '') {
-  // keep digits only for WhatsApp deep links
-  return (value || '').replace(/\D/g, '');
-}
-
 export function buildSocialUrl(type, id, name = '') {
   if (!type || !id) return null;
 
@@ -177,7 +140,7 @@ export function buildSocialUrl(type, id, name = '') {
 
   switch (t) {
     case 'whatsapp': {
-      const digits = sanitizePhone(v);
+      const digits = (v || '').replace(/\D/g, '');
       // wa.me needs an E.164-ish number; fallback to a generic message if not a number
       return digits
         ? `https://wa.me/${digits}`
@@ -215,17 +178,6 @@ export function buildSocialUrl(type, id, name = '') {
   }
 }
 
-export const sanitizeSlug = (s) =>
-  s
-    .toLowerCase()
-    .normalize('NFKD') // split accents
-    .replace(/[\u0300-\u036f]/g, '') // drop accent marks
-    .replace(/&/g, 'and')
-    .replace(/[\s._/]+/g, '-') // spaces/dots/underscores/slashes -> hyphen
-    .replace(/[^a-z0-9-]/g, '') // keep only a-z, 0-9, and hyphen
-    .replace(/-+/g, '-') // collapse multiple hyphens
-    .replace(/^-+|-+$/g, ''); // trim leading/trailing hyphens
-
 export const queryStringFrom = (filter, page) => {
   const qp = new URLSearchParams();
   if (filter) {
@@ -237,23 +189,14 @@ export const queryStringFrom = (filter, page) => {
   return qp.toString();
 };
 
-export const prettySize = (bytes = 0) => {
-  if (!bytes) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
-};
-
 export const capitalize = (s = '') => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-
-export const preview = (text = '', max = 80) =>
-  text.length > max ? `${text.slice(0, max)}…` : text;
 
 export const formatDateTime = (d) => (d ? dayjs(d).format('DD MMM YYYY, hh:mm A') : '—');
 
 // -----------------------------
 // Analytics Helpers
 // -----------------------------
+export const isBlank = (v) => v === undefined || v === null || String(v).trim() === '';
 
 export const safeJoin = (base, path) => {
   const b = String(base || '').replace(/\/+$/, '');
@@ -270,7 +213,7 @@ export const getSessionToken = () => {
   return token || null;
 };
 
-//  map here so all tabs use same mapping
+//  map here so all tabs u
 export const COUNTRY_NAMES = {
   IN: 'India',
   US: 'United States',
@@ -340,335 +283,310 @@ export const formatCurrencyCompactINR = (amount) => {
   return `₹${n.toLocaleString()}`;
 };
 
-export const generatePalette = (count, colors = []) => {
-  if (!count) return [];
-  const base = Array.isArray(colors) && colors.length ? colors : ['#000'];
-  const out = [];
-
-  for (let i = 0; i < count; i++) {
-    const c = base[i % base.length];
-    out.push(c);
-  }
-
-  return out;
-};
-
-// export const formatTimeHM = (d) => (d ? dayjs(d).format('hh:mm A') : '');
-// export const formatDayDMY = (d) => (d ? dayjs(d).format('DD MMM YYYY') : '');
-
 //notification
-export function PreviewPanel({ form, title, body, cta1Title, cta1Url, cta2Title, cta2Url }) {
-  const effectiveLandingUrl =
-    form.landing_type === 'external'
-      ? safeTrim(form.landing_external_url)
-      : form.landing_type === 'internal'
-        ? `internal:${safeTrim(form.landing_internal_action)}`
-        : '';
 
-  return (
-    <Paper
-      variant="outlined"
-      sx={{ p: { xs: 2, sm: 3 }, bgcolor: 'background.paper', height: '100%' }}
-    >
-      <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 3 }}>
-        <Iconify icon="solar:monitor-smartphone-bold" width={24} />
-        <Typography sx={{ fontWeight: 900, fontSize: { xs: 14, sm: 16 } }}>
-          Live Preview - All Platforms
-        </Typography>
-      </Stack>
+// export function PreviewPanel({ form, title, body, cta1Title, cta1Url, cta2Title, cta2Url }) {
+//   const effectiveLandingUrl =
+//     form.landing_type === 'external'
+//       ? safeTrim(form.landing_external_url)
+//       : form.landing_type === 'internal'
+//         ? `internal:${safeTrim(form.landing_internal_action)}`
+//         : '';
 
-      <Stack spacing={4}>
-        <Box>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-            <Iconify icon="mdi:google-chrome" width={20} color="#4285F4" />
-            <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Chrome Desktop</Typography>
-            <Chip size="small" label="Web" variant="outlined" />
-          </Stack>
+//   return (
+//     <Paper
+//       variant="outlined"
+//       sx={{ p: { xs: 2, sm: 3 }, bgcolor: 'background.paper', height: '100%' }}
+//     >
+//       <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 3 }}>
+//         <Iconify icon="solar:monitor-smartphone-bold" width={24} />
+//         <Typography sx={{ fontWeight: 900, fontSize: { xs: 14, sm: 16 } }}>
+//           Live Preview - All Platforms
+//         </Typography>
+//       </Stack>
 
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              p: 2,
-              bgcolor: '#f5f5f5',
-              borderRadius: 2,
-            }}
-          >
-            <ChromeDesktopPreview
-              title={title}
-              body={body}
-              iconUrl={form.icon_url}
-              imageUrl={form.image_url}
-              landingUrl={effectiveLandingUrl}
-              cta1Title={cta1Title}
-              cta1Url={cta1Url}
-              cta2Title={cta2Title}
-              cta2Url={cta2Url}
-            />
-          </Box>
-        </Box>
+//       <Stack spacing={4}>
+//         <Box>
+//           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+//             <Iconify icon="mdi:google-chrome" width={20} color="#4285F4" />
+//             <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Chrome Desktop</Typography>
+//             <Chip size="small" label="Web" variant="outlined" />
+//           </Stack>
 
-        <Divider />
+//           <Box
+//             sx={{
+//               display: 'flex',
+//               justifyContent: 'center',
+//               p: 2,
+//               bgcolor: '#f5f5f5',
+//               borderRadius: 2,
+//             }}
+//           >
+//             <ChromeDesktopPreview
+//               title={title}
+//               body={body}
+//               iconUrl={form.icon_url}
+//               imageUrl={form.image_url}
+//               landingUrl={effectiveLandingUrl}
+//               cta1Title={cta1Title}
+//               cta1Url={cta1Url}
+//               cta2Title={cta2Title}
+//               cta2Url={cta2Url}
+//             />
+//           </Box>
+//         </Box>
 
-        <Box>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-            <Iconify icon="mdi:android" width={20} color="#3DDC84" />
-            <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Android Mobile</Typography>
-            <Chip size="small" label="Mobile" variant="outlined" />
-          </Stack>
+//         <Divider />
 
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              p: 2,
-              bgcolor: '#e8f5e9',
-              borderRadius: 2,
-            }}
-          >
-            <AndroidMobilePreview
-              title={title}
-              body={body}
-              iconUrl={form.icon_url}
-              imageUrl={form.image_url}
-              landingUrl={effectiveLandingUrl}
-              cta1Title={cta1Title}
-              cta1Url={cta1Url}
-              cta2Title={cta2Title}
-              cta2Url={cta2Url}
-            />
-          </Box>
-        </Box>
+//         <Box>
+//           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+//             <Iconify icon="mdi:android" width={20} color="#3DDC84" />
+//             <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Android Mobile</Typography>
+//             <Chip size="small" label="Mobile" variant="outlined" />
+//           </Stack>
 
-        <Divider />
+//           <Box
+//             sx={{
+//               display: 'flex',
+//               justifyContent: 'center',
+//               p: 2,
+//               bgcolor: '#e8f5e9',
+//               borderRadius: 2,
+//             }}
+//           >
+//             <AndroidMobilePreview
+//               title={title}
+//               body={body}
+//               iconUrl={form.icon_url}
+//               imageUrl={form.image_url}
+//               landingUrl={effectiveLandingUrl}
+//               cta1Title={cta1Title}
+//               cta1Url={cta1Url}
+//               cta2Title={cta2Title}
+//               cta2Url={cta2Url}
+//             />
+//           </Box>
+//         </Box>
 
-        <Box>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-            <Iconify icon="mdi:apple" width={20} color="#000" />
-            <Typography sx={{ fontWeight: 700, fontSize: 14 }}>iOS Mobile</Typography>
-            <Chip size="small" label="Mobile" variant="outlined" />
-          </Stack>
+//         <Divider />
 
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              p: 2,
-              bgcolor: '#fafafa',
-              borderRadius: 2,
-            }}
-          >
-            <IOSMobilePreview
-              title={title}
-              body={body}
-              iconUrl={form.icon_url}
-              imageUrl={form.image_url}
-            />
-          </Box>
+//         <Box>
+//           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+//             <Iconify icon="mdi:apple" width={20} color="#000" />
+//             <Typography sx={{ fontWeight: 700, fontSize: 14 }}>iOS Mobile</Typography>
+//             <Chip size="small" label="Mobile" variant="outlined" />
+//           </Stack>
 
-          <Alert severity="info" variant="soft" sx={{ mt: 1.5 }}>
-            iOS notifications don&apos;t support action buttons (CTAs)
-          </Alert>
-        </Box>
+//           <Box
+//             sx={{
+//               display: 'flex',
+//               justifyContent: 'center',
+//               p: 2,
+//               bgcolor: '#fafafa',
+//               borderRadius: 2,
+//             }}
+//           >
+//             <IOSMobilePreview
+//               title={title}
+//               body={body}
+//               iconUrl={form.icon_url}
+//               imageUrl={form.image_url}
+//             />
+//           </Box>
 
-        <Divider />
+//           <Alert severity="info" variant="soft" sx={{ mt: 1.5 }}>
+//             iOS notifications don&apos;t support action buttons (CTAs)
+//           </Alert>
+//         </Box>
 
-        <Box>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-            <Iconify icon="mdi:microsoft-windows" width={20} color="#0078D4" />
-            <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Windows Desktop</Typography>
-            <Chip size="small" label="Desktop" variant="outlined" />
-          </Stack>
+//         <Divider />
 
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              p: 2,
-              bgcolor: '#1e1e1e',
-              borderRadius: 2,
-            }}
-          >
-            <WindowsDesktopPreview
-              title={title}
-              body={body}
-              iconUrl={form.icon_url}
-              imageUrl={form.image_url}
-              landingUrl={effectiveLandingUrl}
-            />
-          </Box>
+//         <Box>
+//           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+//             <Iconify icon="mdi:microsoft-windows" width={20} color="#0078D4" />
+//             <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Windows Desktop</Typography>
+//             <Chip size="small" label="Desktop" variant="outlined" />
+//           </Stack>
 
-          <Alert severity="info" variant="soft" sx={{ mt: 1.5 }}>
-            Windows notifications have limited support for action buttons
-          </Alert>
-        </Box>
-      </Stack>
-    </Paper>
-  );
-}
-const MAX_CTA_TITLE = 40;
+//           <Box
+//             sx={{
+//               display: 'flex',
+//               justifyContent: 'center',
+//               p: 2,
+//               bgcolor: '#1e1e1e',
+//               borderRadius: 2,
+//             }}
+//           >
+//             <WindowsDesktopPreview
+//               title={title}
+//               body={body}
+//               iconUrl={form.icon_url}
+//               imageUrl={form.image_url}
+//               landingUrl={effectiveLandingUrl}
+//             />
+//           </Box>
+
+//           <Alert severity="info" variant="soft" sx={{ mt: 1.5 }}>
+//             Windows notifications have limited support for action buttons
+//           </Alert>
+//         </Box>
+//       </Stack>
+//     </Paper>
+//   );
+// }
 
 const INTERNAL_ACTION_OPEN_PROFILE = 'open-profile';
 
-export function CtaCard({
-  label,
-  color = 'primary',
-  cta,
-  setCta,
-  maxTitle = 40,
-  titleValue,
-  urlValue,
-  urlInvalid,
-  pairInvalid,
-}) {
-  const showBot =
-    cta.landing_type === 'internal' && (cta.internal_action || '') === INTERNAL_ACTION_OPEN_PROFILE;
+// export function CtaCard({
+//   label,
+//   color = 'primary',
+//   cta,
+//   setCta,
+//   maxTitle = 40,
+//   titleValue,
+//   urlValue,
+//   urlInvalid,
+//   pairInvalid,
+// }) {
+//   const showBot =
+//     cta.landing_type === 'internal' && (cta.internal_action || '') === INTERNAL_ACTION_OPEN_PROFILE;
 
-  return (
-    <Paper
-      variant="outlined"
-      sx={(th) => ({
-        p: 2,
-        bgcolor: 'background.neutral',
-        border: pairInvalid
-          ? `2px solid ${th.palette.error.main}`
-          : `1px solid ${th.palette.divider}`,
-        borderRadius: 2,
-      })}
-    >
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-        <Chip label={label} size="small" color={color} sx={{ fontWeight: 800 }} />
-        <Typography variant="body2" color="text.secondary">
-          Optional
-        </Typography>
-      </Stack>
+//   return (
+//     <Paper
+//       variant="outlined"
+//       sx={(th) => ({
+//         p: 2,
+//         bgcolor: 'background.neutral',
+//         border: pairInvalid
+//           ? `2px solid ${th.palette.error.main}`
+//           : `1px solid ${th.palette.divider}`,
+//         borderRadius: 2,
+//       })}
+//     >
+//       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+//         <Chip label={label} size="small" color={color} sx={{ fontWeight: 800 }} />
+//         <Typography variant="body2" color="text.secondary">
+//           Optional
+//         </Typography>
+//       </Stack>
 
-      <Grid container spacing={2}>
-        {/* Title */}
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label="Button Title"
-            value={cta.title}
-            onChange={(e) => setCta((p) => ({ ...p, title: e.target.value }))}
-            error={titleValue.length > maxTitle}
-            helperText={`${titleValue.length}/${maxTitle}`}
-            inputProps={{ maxLength: maxTitle }}
-          />
-        </Grid>
+//       <Grid container spacing={2}>
+//         {/* Title */}
+//         <Grid item xs={12} md={6}>
+//           <TextField
+//             fullWidth
+//             label="Button Title"
+//             value={cta.title}
+//             onChange={(e) => setCta((p) => ({ ...p, title: e.target.value }))}
+//             error={titleValue.length > maxTitle}
+//             helperText={`${titleValue.length}/${maxTitle}`}
+//             inputProps={{ maxLength: maxTitle }}
+//           />
+//         </Grid>
 
-        {/* Type */}
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <InputLabel>Landing Type</InputLabel>
-            <Select
-              value={cta.landing_type}
-              label="Landing Type"
-              onChange={(e) =>
-                setCta((p) => ({
-                  ...p,
-                  landing_type: e.target.value,
-                  // reset fields when switching type
-                  internal_action: e.target.value === 'internal' ? p.internal_action || '' : '',
-                  external_url: e.target.value === 'external' ? p.external_url || '' : '',
-                  bot_id: e.target.value === 'internal' ? p.bot_id || '' : '',
-                }))
-              }
-            >
-              <MenuItem value="external">External URL</MenuItem>
-              <MenuItem value="internal">Internal Action</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
+//         {/* Type */}
+//         <Grid item xs={12} md={6}>
+//           <FormControl fullWidth>
+//             <InputLabel>Landing Type</InputLabel>
+//             <Select
+//               value={cta.landing_type}
+//               label="Landing Type"
+//               onChange={(e) =>
+//                 setCta((p) => ({
+//                   ...p,
+//                   landing_type: e.target.value,
+//                   // reset fields when switching type
+//                   internal_action: e.target.value === 'internal' ? p.internal_action || '' : '',
+//                   external_url: e.target.value === 'external' ? p.external_url || '' : '',
+//                   bot_id: e.target.value === 'internal' ? p.bot_id || '' : '',
+//                 }))
+//               }
+//             >
+//               <MenuItem value="external">External URL</MenuItem>
+//               <MenuItem value="internal">Internal Action</MenuItem>
+//             </Select>
+//           </FormControl>
+//         </Grid>
 
-        {/* Target */}
-        {cta.landing_type === 'external' ? (
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Action URL"
-              placeholder="https://example.com/page"
-              value={cta.external_url}
-              onChange={(e) => setCta((p) => ({ ...p, external_url: e.target.value }))}
-              error={pairInvalid || (Boolean(urlValue) && urlInvalid)}
-              helperText={
-                pairInvalid ? 'Both title and URL are required' : 'Absolute http/https URL'
-              }
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Iconify icon="mdi:link" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-        ) : (
-          <Grid item xs={12}>
-            <ActionSelector
-              label="Internal Action"
-              placeholder="Select action..."
-              value={cta.internal_action || ''}
-              onChange={(val) =>
-                setCta((p) => ({
-                  ...p,
-                  internal_action: val || '',
-                  // reset bot if action changes away from open-profile
-                  bot_id: (val || '') === INTERNAL_ACTION_OPEN_PROFILE ? p.bot_id || '' : '',
-                }))
-              }
-              fullWidth
-              helperText={
-                pairInvalid ? 'Both title and internal action are required' : 'Triggers app action'
-              }
-              error={pairInvalid}
-            />
-          </Grid>
-        )}
+//         {/* Target */}
+//         {cta.landing_type === 'external' ? (
+//           <Grid item xs={12}>
+//             <TextField
+//               fullWidth
+//               label="Action URL"
+//               placeholder="https://example.com/page"
+//               value={cta.external_url}
+//               onChange={(e) => setCta((p) => ({ ...p, external_url: e.target.value }))}
+//               error={pairInvalid || (Boolean(urlValue) && urlInvalid)}
+//               helperText={
+//                 pairInvalid ? 'Both title and URL are required' : 'Absolute http/https URL'
+//               }
+//               InputProps={{
+//                 startAdornment: (
+//                   <InputAdornment position="start">
+//                     <Iconify icon="mdi:link" />
+//                   </InputAdornment>
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//         ) : (
+//           <Grid item xs={12}>
+//             <ActionSelector
+//               label="Internal Action"
+//               placeholder="Select action..."
+//               value={cta.internal_action || ''}
+//               onChange={(val) =>
+//                 setCta((p) => ({
+//                   ...p,
+//                   internal_action: val || '',
+//                   // reset bot if action changes away from open-profile
+//                   bot_id: (val || '') === INTERNAL_ACTION_OPEN_PROFILE ? p.bot_id || '' : '',
+//                 }))
+//               }
+//               fullWidth
+//               helperText={
+//                 pairInvalid ? 'Both title and internal action are required' : 'Triggers app action'
+//               }
+//               error={pairInvalid}
+//             />
+//           </Grid>
+//         )}
 
-        {/* . Bot selector INSIDE the card */}
-        {showBot && (
-          <Grid item xs={12}>
-            <BotSelector
-              label={`${label}: Select Bot *`}
-              placeholder="Search bot..."
-              valueId={cta.bot_id ? Number(cta.bot_id) : undefined}
-              onBotSelect={(id) =>
-                setCta((p) => ({
-                  ...p,
-                  bot_id: id ? String(id) : '',
-                }))
-              }
-              fullWidth
-            />
+//         {showBot && (
+//           <Grid item xs={12}>
+//             <BotSelector
+//               label={`${label}: Select Bot *`}
+//               placeholder="Search bot..."
+//               valueId={cta.bot_id ? Number(cta.bot_id) : undefined}
+//               onBotSelect={(id) =>
+//                 setCta((p) => ({
+//                   ...p,
+//                   bot_id: id ? String(id) : '',
+//                 }))
+//               }
+//               fullWidth
+//             />
 
-            {!String(cta.bot_id || '').trim() && (
-              <Typography variant="caption" color="error" sx={{ mt: 0.75, display: 'block' }}>
-                Bot is required for <b>{label} open-profile</b>.
-              </Typography>
-            )}
+//             {!String(cta.bot_id || '').trim() && (
+//               <Typography variant="caption" color="error" sx={{ mt: 0.75, display: 'block' }}>
+//                 Bot is required for <b>{label} open-profile</b>.
+//               </Typography>
+//             )}
 
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mt: 0.75, display: 'block' }}
-            >
-              Will save: <code>open-profile?bot_id=XYZ</code>
-            </Typography>
-          </Grid>
-        )}
-      </Grid>
-    </Paper>
-  );
-}
-
-export const COIN_OPS = [
-  { value: 'gt', label: 'Greater than (>)' },
-  { value: 'gte', label: 'Greater or equal (≥)' },
-  { value: 'lt', label: 'Less than (<)' },
-  { value: 'lte', label: 'Less or equal (≤)' },
-  { value: 'eq', label: 'Equal (=)' },
-];
+//             <Typography
+//               variant="caption"
+//               color="text.secondary"
+//               sx={{ mt: 0.75, display: 'block' }}
+//             >
+//               Will save: <code>open-profile?bot_id=XYZ</code>
+//             </Typography>
+//           </Grid>
+//         )}
+//       </Grid>
+//     </Paper>
+//   );
+// }
 
 export function appendIfSet(fd, key, val) {
   if (!isBlank(val)) fd.append(key, String(val));
@@ -1029,15 +947,7 @@ export function TableSortFilter({ value, onChange, disabled, label = 'Sort By' }
   );
 }
 
-//setting
-export function isMaskedSecret(v) {
-  return typeof v === 'string' && v.trim() === '********';
-}
-
 //update profile
-
-export const toNullIfEmpty = (v) =>
-  typeof v === 'string' ? (v.trim() === '' ? null : v.trim()) : v;
 
 export function SectionTitle({ children, sx }) {
   return (
@@ -1058,8 +968,6 @@ export function SectionTitle({ children, sx }) {
   );
 }
 
-
-
 export function toDate(v) {
   if (!v) return null;
   const d = new Date(v);
@@ -1070,21 +978,6 @@ export function formatTime(ts) {
   const d = toDate(ts);
   if (!d) return '';
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-export function getMsgCreatedAt(m) {
-  return m?.createdAt || m?.created_at || null;
-}
-
-export function isSeen(m) {
-  if (m?.is_read === true) return true;
-  if (String(m?.status || '').toLowerCase() === 'read') return true;
-  if (m?.read_at) return true;
-  return false;
-}
-
-export function isDeleted(m) {
-  return m?.status === 'deleted' || m?.is_deleted === true;
 }
 
 export async function copyToClipboard(text) {
@@ -1182,11 +1075,6 @@ export function apiUrl(pathWithQs = '') {
   return `${String(CONFIG.apiUrl || '').replace(/\/+$/, '')}${pathWithQs}`;
 }
 
-export function formatDay(ts) {
-  const d = toDate(ts);
-  if (!d) return '';
-  return d.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
-}
 export function SectionHeader({ title, description, icon }) {
   return (
     <Stack direction="row" spacing={1.5} sx={{ mb: 3 }}>
@@ -1202,14 +1090,6 @@ export function SectionHeader({ title, description, icon }) {
     </Stack>
   );
 }
-
-export const normStr = (v) => (typeof v === 'string' ? v.trim() : '');
-export const normEmail = (v) =>
-  String(v || '')
-    .trim()
-    .toLowerCase();
-
-export const normNum = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
 export function avatarSrc(u) {
   if (!u) return '/assets/images/avatar_default.png';
@@ -1228,14 +1108,6 @@ export function avatarSrc(u) {
   return raw.includes('?')
     ? `${raw}&v=${encodeURIComponent(v)}`
     : `${raw}?v=${encodeURIComponent(v)}`;
-}
-
-
-export function num(v) {
-  if (v === null || typeof v === 'undefined') return '—';
-  const n = Number(v);
-  if (Number.isNaN(n)) return String(v);
-  return String(n);
 }
 
 export const coverSrc = (cover) => {
@@ -1274,11 +1146,6 @@ export function useDebounce(value, delay = 300) {
   return v;
 }
 
-export function isNumericLike(v) {
-  const s = String(v ?? '').trim();
-  return s !== '' && /^[0-9]+$/.test(s);
-}
-
 export function buildQuery(filters) {
   const qp = new URLSearchParams();
   if (filters.status !== '' && filters.status !== null && typeof filters.status !== 'undefined') {
@@ -1295,13 +1162,6 @@ export function buildQuery(filters) {
   return qp.toString();
 }
 
-export function toBoolOrEmpty(v) {
-  if (v === '' || v === null || typeof v === 'undefined') return '';
-  if (v === true || v === 'true' || v === 1 || v === '1') return true;
-  if (v === false || v === 'false' || v === 0 || v === '0') return false;
-  return '';
-}
-
 export const COUNTRY_COLORS = [
   '#6366F1',
   '#EC4899',
@@ -1316,7 +1176,6 @@ export const COUNTRY_COLORS = [
 ];
 
 export const RANK_MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
-
 
 /**
  * Format file size in bytes to human readable string

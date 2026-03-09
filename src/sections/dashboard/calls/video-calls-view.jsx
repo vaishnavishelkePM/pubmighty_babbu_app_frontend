@@ -40,7 +40,7 @@ import TableContainer from '@mui/material/TableContainer';
 import { paths } from 'src/routes/paths';
 
 import { fDate, fTime } from 'src/utils/format-time';
-import { num, safeJoin, avatarSrc } from 'src/utils/helper';
+import { safeJoin, avatarSrc, getSessionToken } from 'src/utils/helper';
 import { ImageLightbox, useImageLightbox } from 'src/utils/image-preview-helper';
 
 import { CONFIG } from 'src/global-config';
@@ -59,7 +59,12 @@ import { StatusChip, CallTypeChip } from 'src/components/chip/call/video_call';
 
 export default function VideoCallsView() {
   const router = useRouter();
-
+  const num = (v) => {
+    if (v === null || typeof v === 'undefined') return '—';
+    const n = Number(v);
+    if (Number.isNaN(n)) return String(v);
+    return String(n);
+  };
   const defaultFilters = useMemo(
     () => ({
       id: '',
@@ -109,13 +114,6 @@ export default function VideoCallsView() {
     coins_charged: '',
   });
 
-  const getToken = () => {
-    let token = getCookie('session_key');
-    if (!token && typeof window !== 'undefined')
-      token = window.localStorage.getItem('session_key') || '';
-    return token || null;
-  };
-
   const buildQuery = useCallback((f, page = 1) => {
     const qp = new URLSearchParams();
     qp.set('page', String(page || 1));
@@ -154,7 +152,7 @@ export default function VideoCallsView() {
 
   const fetchVideoCalls = useCallback(
     async (filter, page = 1, hardReload = false) => {
-      const token = getToken();
+      const token = getSessionToken();
       if (!token) {
         toast.error('Session expired. Please login again.');
         router.push(paths?.auth?.login || '/login');
@@ -227,7 +225,7 @@ export default function VideoCallsView() {
 
   const fetchOne = useCallback(
     async (id) => {
-      const token = getToken();
+      const token = getSessionToken();
       if (!token) return null;
 
       const url = safeJoin(CONFIG.apiUrl, `v1/admin/video-call?id=${encodeURIComponent(id)}`);
@@ -261,7 +259,7 @@ export default function VideoCallsView() {
   const saveEdit = useCallback(async () => {
     if (!selected?.id) return;
 
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) {
       toast.error('Session expired. Please login again.');
       router.push(paths?.auth?.login || '/login');
@@ -444,12 +442,10 @@ export default function VideoCallsView() {
 
           <Grid item xs={12} sm={6} md={3}>
             <UserSelector
-              label="Caller "
+              label="Caller"
               placeholder="Type username OR user id…"
               valueId={filters.reported_by || undefined}
-              onUserSelect={(id) =>
-                setFilters((p) => ({ ...p, reported_by: id ? String(id) : '' }))
-              }
+              onUserSelect={(id) => setFilters((p) => ({ ...p, caller_id: id ? String(id) : '' }))}
             />
           </Grid>
 
@@ -458,9 +454,7 @@ export default function VideoCallsView() {
               label="Receiver Bot"
               placeholder="Type bot username OR bot id…"
               valueId={filters.reported_user || undefined}
-              onBotSelect={(id) =>
-                setFilters((p) => ({ ...p, reported_user: id ? String(id) : '' }))
-              }
+              onBotSelect={(id) => setFilters((p) => ({ ...p, receiver_id: id ? String(id) : '' }))}
             />
           </Grid>
 

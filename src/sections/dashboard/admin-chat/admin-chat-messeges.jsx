@@ -27,18 +27,9 @@ import {
 
 import { paths } from 'src/routes/paths';
 
-import {
-  isSeen,
-  probeUrl,
-  bubbleSx,
-  formatTime,
-  getMediaKind,
-} from 'src/utils/helper';
+import { probeUrl, bubbleSx, formatTime, getMediaKind } from 'src/utils/helper';
 
 import { Iconify } from 'src/components/iconify';
-
-
-
 
 export default function AdminChatMessages({
   activeChat,
@@ -98,29 +89,29 @@ export default function AdminChatMessages({
     setHighlightMsgId(messageId);
     clearHighlightLater();
   };
-const copyToClipboard = useCallback(async (text) => {
-  try {
-    if (!text) return false;
+  const copyToClipboard = useCallback(async (text) => {
+    try {
+      if (!text) return false;
 
-    if (navigator?.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+
       return true;
+    } catch {
+      return false;
     }
-
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-
-    return true;
-  } catch {
-    return false;
-  }
-}, []);
+  }, []);
   const resolveFileUrl = useCallback(
     async (file) => {
       const fid = String(file?.id || '');
@@ -439,7 +430,10 @@ const copyToClipboard = useCallback(async (text) => {
             {messages.map((m) => {
               const alignRight = m?.sender_id === activeChat?.participant_2_id;
               const deleted = m?.status === 'deleted' || m?.is_deleted === true;
-              const seen = isSeen(m);
+              const seen =
+                m?.is_read === true ||
+                String(m?.status || '').toLowerCase() === 'read' ||
+                Boolean(m?.read_at);
 
               const senderName = senderNameById(m?.sender_id);
               const reply = m?.reply_to || null;

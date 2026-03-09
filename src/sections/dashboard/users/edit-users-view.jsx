@@ -35,8 +35,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { normStr ,normEmail  ,safeJoin, getSessionToken } from 'src/utils/helper';
-import {  isFileLike, getMediaSrc, publicUrlFromPath } from 'src/utils/user-helper';
+import { safeTrim, safeJoin, getSessionToken } from 'src/utils/helper';
+import { isFileLike,  publicUrlFromPath } from 'src/utils/user-helper';
 
 import { CONFIG } from 'src/global-config';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -487,28 +487,38 @@ export default function EditUserPage() {
         fd.append('coins', String(Number(vals.coins)));
       }
     }
-    if (normEmail(vals.email) !== normEmail(initial.email))
-      fd.append('email', normEmail(vals.email));
-    if (normStr(vals.phone) !== normStr(initial.phone)) fd.append('phone', normStr(vals.phone));
-    if (normStr(vals.full_name) !== normStr(initial.full_name))
-      fd.append('full_name', normStr(vals.full_name));
-    if (normStr(vals.password)) fd.append('password', normStr(vals.password));
+    const emailNow = String(vals?.email || '')
+      .trim()
+      .toLowerCase();
+    const emailInit = String(initial?.email || '')
+      .trim()
+      .toLowerCase();
 
-    if (normStr(vals.gender) !== normStr(initial.gender)) fd.append('gender', normStr(vals.gender));
-    if (normStr(vals.dob) !== normStr(initial.dob)) fd.append('dob', normStr(vals.dob));
-    if (normStr(vals.looking_for) !== normStr(initial.looking_for))
-      fd.append('looking_for', normStr(vals.looking_for));
-    if (normStr(vals.height) !== normStr(initial.height)) fd.append('height', normStr(vals.height));
-    if (normStr(vals.education) !== normStr(initial.education))
-      fd.append('education', normStr(vals.education));
-    if (normStr(vals.bio) !== normStr(initial.bio)) fd.append('bio', normStr(vals.bio));
-    if (normStr(vals.interests) !== normStr(initial.interests))
-      fd.append('interests', normStr(vals.interests));
+    if (emailNow !== emailInit) fd.append('email', emailNow);
+    if (safeTrim(vals.phone) !== safeTrim(initial.phone)) fd.append('phone', safeTrim(vals.phone));
+    if (safeTrim(vals.full_name) !== safeTrim(initial.full_name))
+      fd.append('full_name', safeTrim(vals.full_name));
+    if (safeTrim(vals.password)) fd.append('password', safeTrim(vals.password));
 
-    if (normStr(vals.country) !== normStr(initial.country)) fd.append('country', normStr(vals.country));
-    if (normStr(vals.state) !== normStr(initial.state)) fd.append('state', normStr(vals.state));
-    if (normStr(vals.city) !== normStr(initial.city)) fd.append('city', normStr(vals.city));
-    if (normStr(vals.address) !== normStr(initial.address)) fd.append('address', normStr(vals.address));
+    if (safeTrim(vals.gender) !== safeTrim(initial.gender))
+      fd.append('gender', safeTrim(vals.gender));
+    if (safeTrim(vals.dob) !== safeTrim(initial.dob)) fd.append('dob', safeTrim(vals.dob));
+    if (safeTrim(vals.looking_for) !== safeTrim(initial.looking_for))
+      fd.append('looking_for', safeTrim(vals.looking_for));
+    if (safeTrim(vals.height) !== safeTrim(initial.height))
+      fd.append('height', safeTrim(vals.height));
+    if (safeTrim(vals.education) !== safeTrim(initial.education))
+      fd.append('education', safeTrim(vals.education));
+    if (safeTrim(vals.bio) !== safeTrim(initial.bio)) fd.append('bio', safeTrim(vals.bio));
+    if (safeTrim(vals.interests) !== safeTrim(initial.interests))
+      fd.append('interests', safeTrim(vals.interests));
+
+    if (safeTrim(vals.country) !== safeTrim(initial.country))
+      fd.append('country', safeTrim(vals.country));
+    if (safeTrim(vals.state) !== safeTrim(initial.state)) fd.append('state', safeTrim(vals.state));
+    if (safeTrim(vals.city) !== safeTrim(initial.city)) fd.append('city', safeTrim(vals.city));
+    if (safeTrim(vals.address) !== safeTrim(initial.address))
+      fd.append('address', safeTrim(vals.address));
 
     if (String(vals.status) !== String(initial.status)) {
       if (vals.status !== '' && vals.status !== null && vals.status !== undefined) {
@@ -1031,7 +1041,21 @@ export default function EditUserPage() {
                       {existingImages.length ? (
                         <Grid container spacing={1.5}>
                           {existingImages.map((row) => {
-                            const src = getMediaSrc(row);
+                            const p = String(
+                              row?.media_path || row?.image_path || row?.video_path || ''
+                            ).trim();
+
+                            const src = p
+                              ? p.startsWith('http')
+                                ? p
+                                : publicUrlFromPath(p)
+                              : (() => {
+                                  const folders = String(row?.folders || '').trim();
+                                  const name = String(row?.name || '').trim();
+                                  if (folders && name)
+                                    return publicUrlFromPath(`/${folders}/${name}`);
+                                  return '';
+                                })();
 
                             return (
                               <Grid

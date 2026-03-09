@@ -47,7 +47,7 @@ import { fDate, fTime } from 'src/utils/format-time';
 import { getCookie, formatDateTime } from 'src/utils/helper';
 import { ImageLightbox, useImageLightbox } from 'src/utils/image-preview-helper';
 import {
-  pickDate,
+ 
   getIconSrc,
   copyToClipboard,
   META_FILTERS_TEMPLATE,
@@ -310,9 +310,9 @@ export default function GlobalFilteredNotificationsView() {
     setOpenViewDialog(true);
   };
 
-  const createdAt = (row) => pickDate(row, 'createdAt', 'created_at');
-  const scheduledAt = (row) => pickDate(row, 'scheduledAt', 'scheduled_at');
-  const sentAt = (row) => pickDate(row, 'sentAt', 'sent_at');
+  const createdAt = (row) => row?.createdAt || row?.created_at || null;
+  const scheduledAt = (row) => row?.scheduledAt || row?.scheduled_at || null;
+  const sentAt = (row) => row?.sentAt || row?.sent_at || null;
 
   const selectedFilters = useMemo(() => {
     const emptyObj = { ...META_FILTERS_TEMPLATE };

@@ -82,7 +82,7 @@ export default function SetupEmailDialog({ open, onClose, onSuccess, adminEmail 
     try {
       const res = await axios.post(
         `${baseUrl}/verify/twofa/email`,
-        { token: verifyToken },
+        { otp: verifyToken },
         {
           headers: {
             Authorization: `Bearer ${session_key}`,

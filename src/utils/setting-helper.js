@@ -21,6 +21,7 @@ import { Iconify } from 'src/components/iconify';
 
 export const SECTIONS = [
   { key: 'security', label: 'Security', icon: 'solar:shield-check-bold' },
+  { key: '2FA_setting', label: '2FA Settings', icon: 'solar:shield-check-bold' },
   { key: 'auth', label: 'Auth / OTP', icon: 'solar:lock-password-bold' },
   { key: 'admin_pagination', label: 'Admin Pagination', icon: 'solar:list-bold' },
   { key: 'pagination', label: 'User Pagination', icon: 'solar:users-group-rounded-bold' },
@@ -35,7 +36,6 @@ export const SECTIONS = [
 
   { key: 'bot_matching', label: 'Bot ', icon: 'mdi:robot' },
   { key: 'notifications', label: 'Notifications', icon: 'solar:bell-bold' },
-  { key: '2FA_setting', label: '2FA Settings', icon: 'solar:shield-check-bold' },
 ];
 
 export const FIELD_DEFS = {
@@ -163,6 +163,23 @@ export const FIELD_DEFS = {
       min: 1,
       max: 10000000,
       helper: 'Controls difficulty/space. Keep sane.',
+    },
+  ],
+
+  '2FA_setting': [
+    {
+      key: 'is_app_twoFA_enable_on_admin_login',
+      label: 'Enable Authenticator App 2FA (Admin Login)',
+      type: 'twofa',
+      twoFaType: 'app',
+      helper: 'If ON, admin can use authenticator-app OTP.',
+    },
+    {
+      key: 'is_email_twoFA_enable_on_admin_login',
+      label: 'Enable Email OTP 2FA (Admin Login)',
+      type: 'twofa',
+      twoFaType: 'email',
+      helper: 'If ON, admin can login using email OTP as 2FA.',
     },
   ],
 
@@ -652,23 +669,6 @@ export const FIELD_DEFS = {
       max: 1000000,
     },
     { key: 'ad_reward_coins', label: 'Ad Reward Coins', type: 'number', min: 0, max: 1000000 },
-  ],
-
-  '2FA_setting': [
-    {
-      key: 'is_app_twoFA_enable_on_admin_login',
-      label: 'Enable Authenticator App 2FA (Admin Login)',
-      type: 'twofa',
-      twoFaType: 'app',
-      helper: 'If ON, admin can use authenticator-app OTP.',
-    },
-    {
-      key: 'is_email_twoFA_enable_on_admin_login',
-      label: 'Enable Email OTP 2FA (Admin Login)',
-      type: 'twofa',
-      twoFaType: 'email',
-      helper: 'If ON, admin can login using email OTP as 2FA.',
-    },
   ],
 };
 

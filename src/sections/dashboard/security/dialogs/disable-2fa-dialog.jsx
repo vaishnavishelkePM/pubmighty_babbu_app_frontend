@@ -81,8 +81,8 @@ export default function Disable2FADialog({ open, onClose, onSuccess, twoFAMethod
     setIsLoading(true);
     try {
       const res = await axios.post(
-        `${baseUrl}/verify/twofa/email`,
-        { token: disableToken },
+        `${baseUrl}/disable/twofa/email`,
+        { otp: disableToken },
         {
           headers: {
             Authorization: `Bearer ${session_key}`,

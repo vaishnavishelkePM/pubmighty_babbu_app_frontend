@@ -1,4 +1,3 @@
-
 'use client';
 
 import axios from 'axios';
@@ -28,15 +27,9 @@ import {
 
 import { paths } from 'src/routes/paths';
 
+import { getCookie } from 'src/utils/helper';
 import { TabPanel } from 'src/utils/user-helper';
-import { getCookie, isMaskedSecret } from 'src/utils/helper';
-import {
-  SECTIONS,
-  FIELD_DEFS,
-  DurationInput,
-
-  TwoFAToggleField,
-} from 'src/utils/setting-helper';
+import { SECTIONS, FIELD_DEFS, DurationInput, TwoFAToggleField } from 'src/utils/setting-helper';
 
 import { CONFIG } from 'src/global-config';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -44,8 +37,6 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-
-// ─── Main SettingsView ────────────────────────────────────────────────────────
 export default function SettingsView() {
   const session_key = getCookie('session_key');
   const baseUrl = `${CONFIG.apiUrl}/v1/admin`;
@@ -123,7 +114,7 @@ export default function SettingsView() {
     const payload = {};
     for (const k of keys) {
       const v = form?.[sectionKey]?.[k];
-      if (isMaskedSecret(v)) continue;
+      if (typeof v === 'string' && v.trim() === '********') continue;
       payload[k] = v;
     }
     return { [sectionKey]: payload };
@@ -200,11 +191,10 @@ export default function SettingsView() {
     return fields.length > 0 && fields.every((f) => f.type === 'twofa');
   };
 
-  // ── Field renderer ────────────────────────────────────────────────────────
   const renderField = (sectionKey, f) => {
-    // ── 2FA toggle ──────────────────────────────────────────────────────────
     if (f.type === 'twofa') {
-      const currentVal = form?.security?.[f.key] ?? serverSettings?.security?.[f.key] ?? 'off';
+      const currentVal =
+        form?.['2FA_setting']?.[f.key] ?? serverSettings?.['2FA_setting']?.[f.key] ?? 'off';
       return (
         <TwoFAToggleField
           key={f.key}
@@ -308,7 +298,7 @@ export default function SettingsView() {
     }
 
     // ── Text (default) ──────────────────────────────────────────────────────
-    const isSecretMasked = isMaskedSecret(value);
+    const isSecretMasked = typeof value === 'string' && value.trim() === '********';
     const helper =
       f.secretLike && isSecretMasked
         ? 'Value is hidden. Type a new value only if you want to replace it.'

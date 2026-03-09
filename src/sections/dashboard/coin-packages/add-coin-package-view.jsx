@@ -46,9 +46,8 @@ const Schema = z
 
     discount_type: z.enum(['percentage', 'flat']).default('percentage'),
     discount_value: z.coerce.number().min(0, 'Discount must be >= 0').default(0),
-
-    is_popular: z.enum(['0', '1']).default('0'),
-    is_ads_free: z.enum(['0', '1']).default('0'),
+    is_popular: z.coerce.boolean().default(false),
+    is_ads_free: z.coerce.boolean().default(false),
 
     validity_days: z.coerce.number().int().min(0).default(0),
     display_order: z.coerce.number().int().min(0).default(0),
@@ -91,8 +90,8 @@ export default function AddCoinPackageDialog({ open, onClose, onCreated }) {
       price: 99,
       discount_type: 'percentage',
       discount_value: 0,
-      is_popular: '0',
-      is_ads_free: '0',
+      is_popular: false,
+      is_ads_free: false,
       validity_days: 0,
       display_order: 0,
       status: 'active',
@@ -154,8 +153,8 @@ export default function AddCoinPackageDialog({ open, onClose, onCreated }) {
       fd.append('discount_type', values.discount_type);
       fd.append('discount_value', String(Number(values.discount_value || 0)));
 
-      fd.append('is_popular', values.is_popular);
-      fd.append('is_ads_free', values.is_ads_free);
+      fd.append('is_popular', values.is_popular ? 'true' : 'false');
+      fd.append('is_ads_free', values.is_ads_free ? 'true' : 'false');
 
       fd.append('validity_days', String(Number(values.validity_days || 0)));
       fd.append('display_order', String(Number(values.display_order || 0)));
@@ -471,8 +470,8 @@ export default function AddCoinPackageDialog({ open, onClose, onCreated }) {
                           <FormControl fullWidth>
                             <InputLabel>Popular</InputLabel>
                             <Select {...field} label="Popular">
-                              <MenuItem value="0">No</MenuItem>
-                              <MenuItem value="1">Yes</MenuItem>
+                              <MenuItem value={false}>No</MenuItem>
+                              <MenuItem value={true}>Yes</MenuItem>
                             </Select>
                           </FormControl>
                         )}
@@ -487,8 +486,8 @@ export default function AddCoinPackageDialog({ open, onClose, onCreated }) {
                           <FormControl fullWidth>
                             <InputLabel>Ads Free</InputLabel>
                             <Select {...field} label="Ads Free">
-                              <MenuItem value="0">No</MenuItem>
-                              <MenuItem value="1">Yes</MenuItem>
+                              <MenuItem value={false}>No</MenuItem>
+                              <MenuItem value={true}>Yes</MenuItem>
                             </Select>
                           </FormControl>
                         )}

@@ -34,12 +34,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/routes/paths';
 
-import { safeJoin } from 'src/utils/helper';
+import { safeJoin, getSessionToken } from 'src/utils/helper';
 import {
   fileSize,
   isFileLike,
   getImageSrc,
   getVideoSrc,
+
   normalizeCSV6,
   publicUrlFromPath,
 } from 'src/utils/user-helper';
@@ -156,7 +157,7 @@ export default function EditBotView() {
   // IMAGE VIEWER (dialog)
   const [openImageViewer, setOpenImageViewer] = useState(false);
   const [viewerSrc, setViewerSrc] = useState('');
-  const normStr = (v) => (typeof v === 'string' ? v.trim() : '');
+  const safeTrim = (v) => (typeof v === 'string' ? v.trim() : '');
   const handleOpenImageViewer = (src) => {
     const s = String(src || '').trim();
     if (!s) return;
@@ -169,15 +170,9 @@ export default function EditBotView() {
     setViewerSrc('');
   };
 
-  const getToken = () => {
-    let token = getCookie('session_key');
-    if (!token && typeof window !== 'undefined') token = window.localStorage.getItem('session_key');
-    return token || null;
-  };
-
   // ----------------------- BOT: fetch -----------------------
   const fetchBot = useCallback(async () => {
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) {
       toast.error('Session expired. Please login again.');
       router.push(paths?.auth?.login || '/login');
@@ -332,7 +327,7 @@ export default function EditBotView() {
 
   // ----------------------- MEDIA: fetch existing -----------------------
   const fetchMedia = useCallback(async () => {
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) return;
     if (!botId || !Number.isFinite(botId)) return;
 
@@ -441,7 +436,7 @@ export default function EditBotView() {
 
   // ----------------------- IMAGES: upload + delete -----------------------
   const uploadImages = async () => {
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) {
       toast.error('Session expired. Please login again.');
       return;
@@ -482,7 +477,7 @@ export default function EditBotView() {
   };
 
   const deleteExistingImage = async (mediaId) => {
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) return;
 
     try {
@@ -517,7 +512,7 @@ export default function EditBotView() {
 
   // ----------------------- VIDEOS: upload + delete -----------------------
   const uploadVideos = async () => {
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) {
       toast.error('Session expired. Please login again.');
       return;
@@ -558,7 +553,7 @@ export default function EditBotView() {
   };
 
   const deleteExistingVideo = async (videoId) => {
-    const token = getToken();
+    const token = getSessionToken();
     if (!token) return;
 
     try {
@@ -614,42 +609,41 @@ export default function EditBotView() {
           .toLowerCase()
       );
     }
-    if (normStr(vals.phone) !== normStr(initial.phone)) append('phone', normStr(vals.phone));
+    if (safeTrim(vals.phone) !== safeTrim(initial.phone)) append('phone', safeTrim(vals.phone));
 
-    if (normStr(vals.password)) append('password', String(vals.password));
+    if (safeTrim(vals.password)) append('password', String(vals.password));
 
     if (vals.status !== '' && Number(vals.status) !== Number(initial.status))
       append('status', String(Number(vals.status)));
     if (vals.is_active !== '' && Number(vals.is_active) !== Number(initial.is_active))
       append('is_active', Number(vals.is_active) === 1 ? 'true' : 'false');
-
     if (vals.is_verified !== '' && Number(vals.is_verified) !== Number(initial.is_verified))
-      append('is_verified', String(Number(vals.is_verified)));
+      append('is_verified', Number(vals.is_verified) === 1 ? 'true' : 'false');
     if (vals.is_deleted !== '' && Number(vals.is_deleted) !== Number(initial.is_deleted))
       append('is_deleted', String(Number(vals.is_deleted)));
 
-    if (normStr(vals.full_name) !== normStr(initial.full_name))
-      append('full_name', normStr(vals.full_name));
-    if (normStr(vals.gender) !== normStr(initial.gender)) append('gender', normStr(vals.gender));
-    if (normStr(vals.dob) !== normStr(initial.dob)) append('dob', normStr(vals.dob));
-    if (normStr(vals.bio) !== normStr(initial.bio)) append('bio', String(vals.bio ?? ''));
+    if (safeTrim(vals.full_name) !== safeTrim(initial.full_name))
+      append('full_name', safeTrim(vals.full_name));
+    if (safeTrim(vals.gender) !== safeTrim(initial.gender)) append('gender', safeTrim(vals.gender));
+    if (safeTrim(vals.dob) !== safeTrim(initial.dob)) append('dob', safeTrim(vals.dob));
+    if (safeTrim(vals.bio) !== safeTrim(initial.bio)) append('bio', String(vals.bio ?? ''));
 
     const interestsNow = normalizeCSV6(vals.interests);
     const interestsInit = normalizeCSV6(initial.interests);
     if (interestsNow !== interestsInit) append('interests', interestsNow);
 
-    if (normStr(vals.looking_for) !== normStr(initial.looking_for))
-      append('looking_for', normStr(vals.looking_for));
-    if (normStr(vals.height) !== normStr(initial.height)) append('height', normStr(vals.height));
-    if (normStr(vals.education) !== normStr(initial.education))
-      append('education', normStr(vals.education));
+    if (safeTrim(vals.looking_for) !== safeTrim(initial.looking_for))
+      append('looking_for', safeTrim(vals.looking_for));
+    if (safeTrim(vals.height) !== safeTrim(initial.height)) append('height', safeTrim(vals.height));
+    if (safeTrim(vals.education) !== safeTrim(initial.education))
+      append('education', safeTrim(vals.education));
 
-    if (normStr(vals.country) !== normStr(initial.country))
-      append('country', normStr(vals.country));
-    if (normStr(vals.state) !== normStr(initial.state)) append('state', normStr(vals.state));
-    if (normStr(vals.city) !== normStr(initial.city)) append('city', normStr(vals.city));
-    if (normStr(vals.address) !== normStr(initial.address))
-      append('address', normStr(vals.address));
+    if (safeTrim(vals.country) !== safeTrim(initial.country))
+      append('country', safeTrim(vals.country));
+    if (safeTrim(vals.state) !== safeTrim(initial.state)) append('state', safeTrim(vals.state));
+    if (safeTrim(vals.city) !== safeTrim(initial.city)) append('city', safeTrim(vals.city));
+    if (safeTrim(vals.address) !== safeTrim(initial.address))
+      append('address', safeTrim(vals.address));
 
     const av = vals.avatar;
 
@@ -662,7 +656,7 @@ export default function EditBotView() {
     return { fd, changed };
   };
   const onSubmit = async (values) => {
-    const token = getToken();
+    const token = getSessionToken();
 
     if (!token) {
       toast.error('Session expired. Please login again.');

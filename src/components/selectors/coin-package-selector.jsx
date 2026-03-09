@@ -15,7 +15,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-import { safeJoin, useDebounce, isNumericLike } from 'src/utils/helper';
+import { safeJoin, useDebounce } from 'src/utils/helper';
 
 import { CONFIG } from 'src/global-config';
 
@@ -153,7 +153,8 @@ export default function CoinPackageSelector({
       // - Else use name search (name=abc)
       if (term && term.trim()) {
         const t = term.trim();
-        if (isNumericLike(t)) params.set('id', t);
+        const s = String(t ?? '').trim();
+        if (s !== '' && /^[0-9]+$/.test(s)) params.set('id', t);
         else params.set('name', t);
       }
 

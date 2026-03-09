@@ -11,10 +11,13 @@ import { paths } from 'src/routes/paths';
 import { usePathname } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import { safeJoin } from 'src/utils/helper';
+
+import { CONFIG } from 'src/global-config';
+import { useAppContext } from 'src/contexts/app-context';
+
 import { Label } from 'src/components/label';
 import { CustomPopover } from 'src/components/custom-popover';
-
-import { useMockedUser } from 'src/auth/hooks';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './log-out-button';
@@ -26,8 +29,18 @@ export function AccountPopover({ data = [], sx, ...other }) {
 
   const { open, anchorEl, onClose, onOpen } = usePopover();
 
-  const { user } = useMockedUser();
+  // const { user } = useMockedUser();
+  const { user } = useAppContext();
 
+  const photoURL = user?.avatar
+    ? safeJoin(CONFIG.assetsUrl, `uploads/avatar/admin/${user.avatar}`)
+    : undefined;
+  console.log('POPOVER USER =>', user);
+  console.log('POPOVER photoURL =>', photoURL);
+  console.log('LOCALSTORAGE USER =>', localStorage.getItem('user'));
+  const displayName = user?.first_name
+    ? `${user.first_name} ${user.last_name || ''}`.trim()
+    : user?.username || '';
   const renderMenuActions = () => (
     <CustomPopover
       open={open}
@@ -37,9 +50,8 @@ export function AccountPopover({ data = [], sx, ...other }) {
     >
       <Box sx={{ p: 2, pb: 1.5 }}>
         <Typography variant="subtitle2" noWrap>
-          {user?.displayName}
+          {displayName}
         </Typography>
-
         <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
           {user?.email}
         </Typography>
@@ -106,12 +118,11 @@ export function AccountPopover({ data = [], sx, ...other }) {
     <>
       <AccountButton
         onClick={onOpen}
-        photoURL={user?.photoURL}
-        displayName={user?.displayName}
+        photoURL={photoURL}
+        displayName={displayName}
         sx={sx}
         {...other}
       />
-
       {renderMenuActions()}
     </>
   );
